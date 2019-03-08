@@ -31,7 +31,7 @@
   <groupId>org.xwiki.contrib.gdpr</groupId>
   <artifactId>application-gdpr</artifactId>
   <name>GDPR</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <packaging>pom</packaging>
   <description>An application that enables protection of personal data by restricting access to user profile pages.</description>
   <properties>
@@ -45,7 +45,7 @@
     <connection>scm:git:git://git.xwikisas.com/xwiki-sas-cpt/application-gdpr.git</connection>
     <developerConnection>scm:git:git@git.xwikisas.com:xwiki-sas-cpt/application-gdpr.git</developerConnection>
     <url>https://git.xwikisas.com/xwiki-sas-cpt/application-gdpr.git</url>
-    <tag>HEAD</tag>
+    <tag>application-gdpr-1.0</tag>
   </scm>
   <developers>
     <developer>
