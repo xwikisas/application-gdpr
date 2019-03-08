@@ -501,7 +501,6 @@ require(['jquery', 'JobRunner'], function($, JobRunner) {
   };
 
   $('.job-status').has('.ui-progress').each(function() {
-alert($(this));
     var jobStatus = $(this);
     var url = jobStatus.attr('data-url');
     if (url !== '') {
