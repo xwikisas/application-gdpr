@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.xwiki.contrib.gdpr</groupId>
     <artifactId>application-gdpr</artifactId>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
   </parent>
   <artifactId>application-gdpr-ui</artifactId>
   <packaging>xar</packaging>
