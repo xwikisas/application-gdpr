@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ * See the NOTICE file distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+-->
+
+<xwikidoc version="1.3" reference="GDPR.Code.GDPRAdmin" locale="">
+  <web>GDPR.Code</web>
+  <name>GDPRAdmin</name>
+  <language/>
+  <defaultLanguage/>
+  <translation>0</translation>
+  <creator>xwiki:XWiki.Admin</creator>
+  <creationDate>1551878368000</creationDate>
+  <parent>xwiki:GDPR.Code.WebHome</parent>
+  <author>xwiki:XWiki.Admin</author>
+  <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
+  <date>1551943609000</date>
+  <contentUpdateDate>1551943609000</contentUpdateDate>
+  <version>1.1</version>
+  <title>GDPR Administration</title>
+  <comment/>
+  <minorEdit>false</minorEdit>
+  <syntaxId>xwiki/2.1</syntaxId>
+  <hidden>true</hidden>
+  <content>{{template name="job_macros.vm"/}}
+
+{{velocity output='false'}}
+#set($jobId = ['gdpr', 'singleton'])
+#set($jobStatus = $services.job.getJobStatus(['gdpr', 'singleton']))
+#macro (displayGDPRForm)
+  #if($jobStatus.state == 'RUNNING')
+    {{info}}$services.localization.render('gdpr.admin.running'){{/info}}
+    #GDPRLogging()
+  #else
+    #if($jobStatus.state == 'FINISHED' &amp;&amp; "$!request.action" != 'protectUserProfiles')
+      {{success}}$services.localization.render('gdpr.admin.finished'){{/success}}
+    #end
+
+    {{html clean="false"}}
+    &lt;div id="admin-protectUserProfiles">
+      &lt;form class="xform half" action="$xwiki.relativeRequestURL" method="post">
+        &lt;div class="hidden">
+          &lt;input type="hidden" name="form_token" value="$services.csrf.token" />
+          &lt;input type="hidden" name="action" value="protectUserProfiles" />
+        &lt;/div>
+        &lt;fieldset>
+          &lt;legend>$services.localization.render('gdpr.admin.protect.userprofiles.legend')&lt;/fieldset>
+          &lt;dl>
+            &lt;label for="secureUserProfile">$services.localization.render('gdpr.admin.protect.userprofiles.label')&lt;/label>
+            &lt;dt>
+              &lt;span class="xHint">$services.localization.render('gdpr.admin.protect.userprofiles.hint')&lt;/span>
+            &lt;/dt>
+            &lt;dd>
+              &lt;div class="buttonwrapper">
+                &lt;input type="submit" class="button" value="$services.localization.render('gdpr.admin.submit')" />
+              &lt;/div>
+            &lt;/dd>     
+        &lt;/fieldset>
+      &lt;/form>
+      &lt;/div>   
+    {{/html}}
+  #end
+#end
+
+#macro(handleGDPRAction $withValidToken)
+  #set ($exception = $xcontext.lastexception)
+  #if ("$!exception" != '')
+    #set ($message = "$stringtool.capitalize($request.action) failed: $exception.message ($exception.class)")
+    #if ($isAjaxRequest)
+      $response.sendError(500, $message)
+    #else
+      {{error}}$message{{/error}}
+    #end
+  #elseif($request.xpage == 'plain' &amp;&amp; $request.outputSyntax == 'plain' &amp;&amp; $request.getJobStatus == '1')
+    $jobStatus
+  #else
+    #displayGDPRForm()
+    #if ($withValidToken &amp;&amp; "$!request.action" == 'protectUserProfiles')
+      $services.gdpr.protectUserProfiles()
+      #GDPRLogging()
+    #end
+  #end
+#end
+
+#macro(GDPRLogging)  
+  #set ($discard = $xwiki.jsx.use('GDPR.Code.GDPRAdmin'))
+  #if($jobStatus)
+    #set ($jobStatusURL = $xwiki.getURL('GDPR.Code.GDPRAdmin', 'get', $escapetool.url({ 'outputSyntax': 'plain', 'syntax': 'plain', 'getJobStatus' : '1' })))
+    #set($finished = $jobStatus.state == 'FINISHED')
+
+    {{html clean="false"}}
+      &lt;div class="xcontent job-status" data-url="$jobStatusURL">
+        #displayJobProgressBar($jobStatus)
+        #if (!$finished)          
+          #if ($jobStatus &amp;&amp; $jobStatus.log.isEmpty() &amp;&amp; $jobStatus.state == 'NONE')
+            &lt;p class="ui-progress-message">
+              $services.localization.render('gdpr.admin.protect.log.message.waiting')
+            &lt;/p>
+          #end
+        #else
+          #if ($jobStatus.log.getLogs('ERROR').isEmpty())
+            &lt;div class="box successmessage">
+              $services.localization.render('gdpr.admin.protect.log.message.success')
+            &lt;/div>
+          #else
+            &lt;div class="box errormessage">
+              $services.localization.render('gdpr.admin.protect.log.message.errors')
+            &lt;/div>
+          #end
+        #end
+        #displayJobStatusLog($jobStatus true)
+      &lt;/div>
+    {{/html}}
+  #end
+#end
+
+#macro (handleGDPRRequest)
+  #if (!$hasGlobalAdmin)    
+    {{error}}$services.localization.render('gdpr.admin.error.notallowed'){{/error}}
+  #elseif ($request.form_token)
+    #if ($services.csrf.isTokenValid($request.form_token))
+      #handleGDPRAction(true)
+    #elseif ($isAjaxRequest)
+      $response.sendError(401, 'CSRF token verification failed!')
+    #else
+      $response.sendRedirect($services.csrf.getResubmissionURL())
+    #end
+  #else
+    #handleGDPRAction(false)
+  #end
+#end
+{{/velocity}}
+
+{{velocity}}
+#set ($isAjaxRequest = $request.getHeader('X-Requested-With') == 'XMLHttpRequest')
+#handleGDPRRequest()
+{{/velocity}}</content>
+  <object>
+    <name>GDPR.Code.GDPRAdmin</name>
+    <number>0</number>
+    <className>XWiki.ConfigurableClass</className>
+    <guid>50d94ac8-39cc-44fa-acc7-270a877e33f9</guid>
+    <class>
+      <name>XWiki.ConfigurableClass</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <categoryIcon>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>categoryIcon</name>
+        <number>11</number>
+        <picker>0</picker>
+        <prettyName>categoryIcon</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </categoryIcon>
+      <codeToExecute>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <editor>Text</editor>
+        <name>codeToExecute</name>
+        <number>7</number>
+        <picker>0</picker>
+        <prettyName>codeToExecute</prettyName>
+        <rows>5</rows>
+        <size>40</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </codeToExecute>
+      <configurationClass>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>configurationClass</name>
+        <number>3</number>
+        <picker>0</picker>
+        <prettyName>configurationClass</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </configurationClass>
+      <configureGlobally>
+        <customDisplay/>
+        <defaultValue/>
+        <disabled>0</disabled>
+        <displayFormType>checkbox</displayFormType>
+        <displayType/>
+        <name>configureGlobally</name>
+        <number>4</number>
+        <prettyName>configureGlobally</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </configureGlobally>
+      <displayBeforeCategory>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>displayBeforeCategory</name>
+        <number>10</number>
+        <picker>0</picker>
+        <prettyName>displayBeforeCategory</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </displayBeforeCategory>
+      <displayInCategory>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>displayInCategory</name>
+        <number>9</number>
+        <picker>0</picker>
+        <prettyName>displayInCategory</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </displayInCategory>
+      <displayInSection>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>displayInSection</name>
+        <number>1</number>
+        <picker>0</picker>
+        <prettyName>displayInSection</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </displayInSection>
+      <heading>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>heading</name>
+        <number>2</number>
+        <picker>0</picker>
+        <prettyName>heading</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </heading>
+      <iconAttachment>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>iconAttachment</name>
+        <number>8</number>
+        <picker>0</picker>
+        <prettyName>iconAttachment</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </iconAttachment>
+      <linkPrefix>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>linkPrefix</name>
+        <number>5</number>
+        <picker>0</picker>
+        <prettyName>linkPrefix</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </linkPrefix>
+      <propertiesToShow>
+        <cache>0</cache>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <displayType>input</displayType>
+        <multiSelect>1</multiSelect>
+        <name>propertiesToShow</name>
+        <number>6</number>
+        <picker>0</picker>
+        <prettyName>propertiesToShow</prettyName>
+        <relationalStorage>1</relationalStorage>
+        <separator> </separator>
+        <separators> ,|</separators>
+        <size>20</size>
+        <sort>none</sort>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <values/>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </propertiesToShow>
+      <sectionOrder>
+        <customDisplay/>
+        <disabled>0</disabled>
+        <name>sectionOrder</name>
+        <number>12</number>
+        <numberType>integer</numberType>
+        <prettyName>sectionOrder</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <validationMessage/>
+        <validationRegExp/>
+        <classType>com.xpn.xwiki.objects.classes.NumberClass</classType>
+      </sectionOrder>
+    </class>
+    <property>
+      <categoryIcon></categoryIcon>
+    </property>
+    <property>
+      <codeToExecute>{{include reference="GDPR.Code.GDPRAdmin" /}}</codeToExecute>
+    </property>
+    <property>
+      <configurationClass></configurationClass>
+    </property>
+    <property>
+      <configureGlobally>1</configureGlobally>
+    </property>
+    <property>
+      <displayBeforeCategory></displayBeforeCategory>
+    </property>
+    <property>
+      <displayInCategory></displayInCategory>
+    </property>
+    <property>
+      <displayInSection>GDPR</displayInSection>
+    </property>
+    <property>
+      <heading></heading>
+    </property>
+    <property>
+      <iconAttachment></iconAttachment>
+    </property>
+    <property>
+      <linkPrefix></linkPrefix>
+    </property>
+    <property>
+      <propertiesToShow/>
+    </property>
+    <property>
+      <sectionOrder/>
+    </property>
+  </object>
+  <object>
+    <name>GDPR.Code.GDPRAdmin</name>
+    <number>0</number>
+    <className>XWiki.JavaScriptExtension</className>
+    <guid>6fbd7361-dbd9-4b45-8b81-6f339af758d3</guid>
+    <class>
+      <name>XWiki.JavaScriptExtension</name>
+      <customClass/>
+      <customMapping/>
+      <defaultViewSheet/>
+      <defaultEditSheet/>
+      <defaultWeb/>
+      <nameField/>
+      <validationScript/>
+      <cache>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>cache</name>
+        <number>5</number>
+        <prettyName>Caching policy</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>long|short|default|forbid</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </cache>
+      <code>
+        <contenttype>PureText</contenttype>
+        <disabled>0</disabled>
+        <editor>PureText</editor>
+        <name>code</name>
+        <number>2</number>
+        <prettyName>Code</prettyName>
+        <rows>20</rows>
+        <size>50</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.TextAreaClass</classType>
+      </code>
+      <name>
+        <disabled>0</disabled>
+        <name>name</name>
+        <number>1</number>
+        <prettyName>Name</prettyName>
+        <size>30</size>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.StringClass</classType>
+      </name>
+      <parse>
+        <disabled>0</disabled>
+        <displayFormType>select</displayFormType>
+        <displayType>yesno</displayType>
+        <name>parse</name>
+        <number>4</number>
+        <prettyName>Parse content</prettyName>
+        <unmodifiable>0</unmodifiable>
+        <classType>com.xpn.xwiki.objects.classes.BooleanClass</classType>
+      </parse>
+      <use>
+        <cache>0</cache>
+        <disabled>0</disabled>
+        <displayType>select</displayType>
+        <multiSelect>0</multiSelect>
+        <name>use</name>
+        <number>3</number>
+        <prettyName>Use this extension</prettyName>
+        <relationalStorage>0</relationalStorage>
+        <separator> </separator>
+        <separators>|, </separators>
+        <size>1</size>
+        <unmodifiable>0</unmodifiable>
+        <values>currentPage|onDemand|always</values>
+        <classType>com.xpn.xwiki.objects.classes.StaticListClass</classType>
+      </use>
+    </class>
+    <property>
+      <cache>long</cache>
+    </property>
+    <property>
+      <code>require.config({
+  paths: {
+    JobRunner: "$!services.webjars.url('org.xwiki.platform:xwiki-platform-job-webjar', 'jobRunner.min')"
+  }
+});
+
+require(['jquery', 'JobRunner'], function($, JobRunner) {
+  'use strict';
+  var updateProgress = function(jobUI, job) {
+    var percent = Math.floor((job.progress.offset || 0) * 100);
+    jobUI.find('.ui-progress-bar').css('width', percent + '%');
+    var jobLog = job.log.items || [];
+    if (jobLog.size() > 0) {
+      jobUI.find('.ui-progress-message').html(jobLog[jobLog.size() - 1].renderedMessage);
+    }
+  };
+
+  var updateLog = function(jobUI, job) {
+    var jobLog = job.log.items || [];
+    var jobLogUI = jobUI.find('.log');
+    if (job.log.offset === 0) {
+      jobLogUI.html('');
+    }
+    jobLogUI.find('.log-item-loading').removeClass('log-item-loading');
+    $.each(jobLog, function(index, item) {
+      var classNames = ['log-item', 'log-item-' + item.level];
+      if (job.state !== 'FINISHED' &amp;&amp; index === jobLog.size() - 1) {
+        classNames.push('log-item-loading');
+      }
+      $(document.createElement('li')).addClass(classNames.join(' ')).html(item.renderedMessage).appendTo(jobLogUI);
+    })
+  };
+
+  var updateStatus = function(job) {
+    var jobUI = $(this);
+    updateProgress(jobUI, job);
+    updateLog(jobUI, job);
+  };
+
+  var notifyJobDone = function(job) {
+    var jobUI = $(this);
+    jobUI.find('.ui-progress').replaceWith(job.message);
+  };
+
+  var notifyConnectionFailure = function() {
+  };
+
+  $('.job-status').has('.ui-progress').each(function() {
+alert($(this));
+    var jobStatus = $(this);
+    var url = jobStatus.attr('data-url');
+    if (url !== '') {
+      var jobLog = jobStatus.find('.log');
+      JobRunner({
+        createStatusRequest: function() {
+          return {
+            url: url,
+            data: {
+              'logOffset': jobLog.find('.log-item').size()
+            }
+          };
+        }
+      }).resume()
+        .progress($.proxy(updateStatus, this))
+        .done($.proxy(notifyJobDone, this))
+        .fail($.proxy(notifyConnectionFailure, this));
+    }
+  });
+});</code>
+    </property>
+    <property>
+      <name></name>
+    </property>
+    <property>
+      <parse>1</parse>
+    </property>
+    <property>
+      <use>currentPage</use>
+    </property>
+  </object>
+</xwikidoc>
