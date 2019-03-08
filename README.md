@@ -13,5 +13,5 @@ An application that enables protection of personal data by restricting access to
 == Usage ==
 
 After instalation, you can go in the "Administer wiki" (XWiki.XWikiPreferences page), and under Applications tab from the left panel, you can find "GDPR".
-From there you will be able to activate or deactivate if the GDPR is enforced for the user profile pages.
+From there you will be able to recure user profile pages.
 
