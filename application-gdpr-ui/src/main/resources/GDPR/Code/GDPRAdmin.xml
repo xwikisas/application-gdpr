@@ -44,6 +44,20 @@
 {{velocity output='false'}}
 #set($jobId = ['gdpr', 'singleton'])
 #set($jobStatus = $services.job.getJobStatus(['gdpr', 'singleton']))
+#macro(jobMessage $jobStatus)
+  #set($finished = $jobStatus.state == 'FINISHED')
+  #if ($finished)
+    #if ($jobStatus.log.getLogs('ERROR').isEmpty())
+       &lt;div class="box successmessage">
+         $services.localization.render('gdpr.admin.protect.log.message.success')
+       &lt;/div>
+    #else
+       &lt;div class="box errormessage">
+         $services.localization.render('gdpr.admin.protect.log.message.errors')
+       &lt;/div>
+    #end
+  #end
+#end
 #macro (displayGDPRForm)
   #if($jobStatus.state == 'RUNNING')
     {{info}}$services.localization.render('gdpr.admin.running'){{/info}}
@@ -88,21 +102,23 @@
     #else
       {{error}}$message{{/error}}
     #end
-  #elseif($request.xpage == 'plain' &amp;&amp; $request.outputSyntax == 'plain' &amp;&amp; $request.getJobStatus == '1')
-    $jobStatus
+  #elseif($xcontext.action == 'get' &amp;&amp; $request.xpage == 'plain' &amp;&amp; $request.outputSyntax == 'plain' &amp;&amp; $request.getJobStatus == '1')
+    #getJobStatusJSON($jobStatus $json)
+    #set ($json.message = "#jobMessage($jobStatus)")
+    $response.setContentType('application/json')
+    $jsontool.serialize($json)
+  #elseif ($withValidToken &amp;&amp; "$!request.action" == 'protectUserProfiles')
+    $services.gdpr.protectUserProfiles()
+    #GDPRLogging()
   #else
     #displayGDPRForm()
-    #if ($withValidToken &amp;&amp; "$!request.action" == 'protectUserProfiles')
-      $services.gdpr.protectUserProfiles()
-      #GDPRLogging()
-    #end
   #end
 #end
 
 #macro(GDPRLogging)  
   #set ($discard = $xwiki.jsx.use('GDPR.Code.GDPRAdmin'))
   #if($jobStatus)
-    #set ($jobStatusURL = $xwiki.getURL('GDPR.Code.GDPRAdmin', 'get', $escapetool.url({ 'outputSyntax': 'plain', 'syntax': 'plain', 'getJobStatus' : '1' })))
+    #set ($jobStatusURL = $xwiki.getURL('GDPR.Code.GDPRAdmin', 'get', $escapetool.url({ 'outputSyntax': 'plain', 'xpage': 'plain', 'getJobStatus' : '1' })))
     #set($finished = $jobStatus.state == 'FINISHED')
 
     {{html clean="false"}}

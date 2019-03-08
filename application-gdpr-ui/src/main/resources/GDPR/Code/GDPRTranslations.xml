@@ -47,7 +47,7 @@ gdpr.admin.protect.log.message.errors=The user profiles could not be secured.
 gdpr.admin.protect.log.message.waiting=The user profiles are being secured.
 gdpr.admin.error.notallowed=The current action is not allowed.
 gdpr.admin.finished=The user profiles have been secured.
-gdpr.admin.running=Securing user profile is in progress.
+gdpr.admin.running=Securing user profiles is in progress.
 gdpr.admin.submit=Confirm</content>
   <object>
     <name>GDPR.Code.GDPRTranslations</name>

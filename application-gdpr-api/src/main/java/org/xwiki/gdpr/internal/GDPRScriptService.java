@@ -31,7 +31,6 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.xwiki.bridge.DocumentAccessBridge;
 import org.xwiki.component.annotation.Component;
-import org.xwiki.job.Job;
 import org.xwiki.job.JobExecutor;
 import org.xwiki.job.JobStatusStore;
 import org.xwiki.job.event.status.JobStatus;
@@ -94,7 +93,7 @@ public class GDPRScriptService implements ScriptService
 
         GDPRRequest gdprRequest = createGDPRRequest();
         try {
-            Job job = this.jobExecutor.execute(GDPRScriptService.ROLE_HINT, gdprRequest);
+            this.jobExecutor.execute(GDPRScriptService.ROLE_HINT, gdprRequest);
         } catch (Exception e) {
             logger.error("Could not execute job to enable GDPR.", e);
         }
