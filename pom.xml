@@ -31,7 +31,7 @@
   <groupId>org.xwiki.contrib.gdpr</groupId>
   <artifactId>application-gdpr</artifactId>
   <name>GDPR</name>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <description>An application that enables protection of personal data by restricting access to user profile pages.</description>
   <properties>
