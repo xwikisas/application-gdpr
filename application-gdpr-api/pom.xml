@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.xwiki.contrib.gdpr</groupId>
     <artifactId>application-gdpr</artifactId>
-    <version>1.1</version>
+    <version>1.2-SNAPSHOT</version>
   </parent>
   <artifactId>application-gdpr-api</artifactId>
   <packaging>jar</packaging>
