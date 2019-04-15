@@ -118,6 +118,9 @@ public class RightsEnforcerListener implements EventListener
             // there is no user object, return
             return;
         }
+        
+        // Hide the document
+        userXDoc.setHidden(true);
 
         // Delete existing rights objects
         userXDoc.removeXObjects(RIGHTS_CLASS);
