@@ -26,7 +26,7 @@
   <parent>
     <groupId>org.xwiki.commons</groupId>
     <artifactId>xwiki-commons-pom</artifactId>
-    <version>8.4.6</version>
+    <version>8.4.5</version>
   </parent>
   <groupId>org.xwiki.contrib.gdpr</groupId>
   <artifactId>application-gdpr</artifactId>
@@ -35,7 +35,7 @@
   <packaging>pom</packaging>
   <description>An application that enables protection of personal data by restricting access to user profile pages.</description>
   <properties>
-    <xwiki.version>8.4.6</xwiki.version>
+    <xwiki.version>8.4.5</xwiki.version>
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>GDPR</xwiki.extension.name>
     <!-- Sets value for the categories column on e.x.o -->
