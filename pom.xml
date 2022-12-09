@@ -40,12 +40,15 @@
     <xwiki.extension.name>GDPR</xwiki.extension.name>
     <!-- Sets value for the categories column on e.x.o -->
     <xwiki.extension.category>application</xwiki.extension.category>
+    <!-- Disable release staging and directly deploy on the configured distributionManagement -->
+    <xwiki.nexus.skipLocalStaging>true</xwiki.nexus.skipLocalStaging>
+    <xwiki.nexus.skipStaging>true</xwiki.nexus.skipStaging>
   </properties>
   <scm>
     <connection>scm:git:git://git.xwikisas.com/xwiki-sas-cpt/application-gdpr.git</connection>
     <developerConnection>scm:git:git@git.xwikisas.com:xwiki-sas-cpt/application-gdpr.git</developerConnection>
     <url>https://git.xwikisas.com/xwiki-sas-cpt/application-gdpr.git</url>
-    <tag>application-gdpr-1.0</tag>
+    <tag>HEAD</tag>
   </scm>
   <developers>
     <developer>
@@ -56,14 +59,12 @@
   </developers>
   <distributionManagement>
     <repository>
-      <id>nexus.xwikisas.com-client-releases</id>
-      <name>XWiki SAS Maven2 Remote Repository for Releases</name>
-      <url>https://nexus.xwikisas.com/nexus/content/repositories/client-releases/</url>
+      <id>git.xwikisas.com</id>
+      <url>https://git.xwikisas.com/api/v4/projects/166/packages/maven</url>
     </repository>
     <snapshotRepository>
-      <id>nexus.xwikisas.com-client-snapshots</id>
-      <name>XWiki SAS Maven2 Remote Repository for Snapshots</name>
-      <url>https://nexus.xwikisas.com/nexus/content/repositories/client-snapshots/</url>
+      <id>git.xwikisas.com</id>
+      <url>https://git.xwikisas.com/api/v4/projects/166/packages/maven</url>
     </snapshotRepository>
   </distributionManagement>  
   <modules>
