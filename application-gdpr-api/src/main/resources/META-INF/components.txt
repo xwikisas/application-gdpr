@@ -1,3 +1,3 @@
-org.xwiki.gdpr.internal.RightsEnforcerListener
-org.xwiki.gdpr.internal.GDPRScriptService
-org.xwiki.gdpr.internal.GDPRJob
+com.xwiki.gdpr.internal.RightsEnforcerListener
+com.xwiki.gdpr.internal.GDPRScriptService
+com.xwiki.gdpr.internal.GDPRJob

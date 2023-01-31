@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.xwiki.gdpr.internal;
+package com.xwiki.gdpr.internal;
 
 import java.util.Arrays;
 import java.util.Collection;

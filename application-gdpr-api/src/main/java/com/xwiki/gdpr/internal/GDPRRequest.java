@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.xwiki.gdpr.internal;
+package com.xwiki.gdpr.internal;
 
 import org.xwiki.job.AbstractRequest;
 import org.xwiki.model.reference.DocumentReference;
