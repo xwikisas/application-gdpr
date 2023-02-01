@@ -18,7 +18,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package com.xwiki.gdpr.internal;
+package com.xwiki.gdpr.script;
 
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +42,7 @@ import org.xwiki.security.authorization.ContextualAuthorizationManager;
 import org.xwiki.security.authorization.Right;
 
 import com.xpn.xwiki.XWikiContext;
+import com.xwiki.gdpr.internal.GDPRRequest;
 
 /**
  * Script service for the GDPR Application.
@@ -128,5 +129,4 @@ public class GDPRScriptService implements ScriptService
         gdprRequest.setWikiReference(new WikiReference(this.documentAccessBridge.getCurrentWiki()));
         return gdprRequest;
     }
-
 }

@@ -20,7 +20,6 @@
 
 package com.xwiki.gdpr.internal;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,15 +28,10 @@ import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.xwiki.component.annotation.Component;
-import org.xwiki.context.Execution;
 import org.xwiki.job.AbstractJob;
 import org.xwiki.job.DefaultJobStatus;
-import org.xwiki.localization.ContextualLocalizationManager;
 import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.DocumentReferenceResolver;
-import org.xwiki.model.reference.EntityReference;
-import org.xwiki.model.reference.EntityReferenceSerializer;
-import org.xwiki.model.reference.LocalDocumentReference;
 import org.xwiki.model.reference.WikiReference;
 import org.xwiki.query.Query;
 import org.xwiki.query.QueryFilter;
@@ -45,73 +39,39 @@ import org.xwiki.query.QueryManager;
 import org.xwiki.wiki.descriptor.WikiDescriptorManager;
 
 import com.xpn.xwiki.XWikiContext;
-import com.xpn.xwiki.XWikiException;
-import com.xpn.xwiki.doc.XWikiDocument;
-import com.xpn.xwiki.objects.BaseObject;
+import com.xwiki.gdpr.GDPRHelper;
+import com.xwiki.gdpr.script.GDPRScriptService;
 
 /**
+ * Job that secures user profiles applying the configured GDPR security rules.
+ *
  * @version $Id$
+ * @since 1.0
  */
 @Component
 @Named(GDPRScriptService.ROLE_HINT)
 public class GDPRJob extends AbstractJob<GDPRRequest, DefaultJobStatus<GDPRRequest>>
 {
-    
-    private static final LocalDocumentReference ADMIN_GROUP_REFERENCE =
-        new LocalDocumentReference("XWiki", "XWikiAdminGroup");
-
-    /**
-     * The reference to the XWiki Rights class, relative to the current wiki.
-     */
-    public static final LocalDocumentReference RIGHTS_CLASS = new LocalDocumentReference("XWiki", "XWikiRights");
-
-    /**
-     * The groups property of the rights class.
-     */
-    public static final String RIGHTS_GROUPS = "groups";
-
-    /**
-     * The levels property of the rights class.
-     */
-    public static final String RIGHTS_LEVELS = "levels";
-
-    /**
-     * The users property of the rights class.
-     */
-    public static final String RIGHTS_USERS = "users";
-
-    /**
-     * The 'allow / deny' property of the rights class.
-     */
-    public static final String RIGHTS_ALLOWDENY = "allow";
+    private static final String XWQL_USER_QUERY = "from doc.object(XWiki.XWikiUsers) as user";
 
     @Inject
     private WikiDescriptorManager wikiDescriptor;
 
     @Inject
-    protected DocumentReferenceResolver<String> defaultDocRefResolver;
-
-    @Inject @Named("local")
-    protected EntityReferenceSerializer<String> localSerializer;
-
-    @Inject
     private QueryManager queryManager;
-    
-    /**
-     * The query filter used to count the documents from the database.
-     */
+
     @Inject
     @Named("count")
     private QueryFilter countFilter;
 
     @Inject
-    private ContextualLocalizationManager localizationManager;
+    private GDPRHelper gdprHelper;
 
     @Inject
-    protected Execution execution;
+    private DocumentReferenceResolver<String> documentReferenceResolver;
 
     @Inject
-    protected Provider<XWikiContext> xwikiContextProvider;
+    private Provider<XWikiContext> xwikiContextProvider;
 
     @Override
     public String getType()
@@ -122,7 +82,6 @@ public class GDPRJob extends AbstractJob<GDPRRequest, DefaultJobStatus<GDPRReque
     @Override
     protected void runInternal() throws Exception
     {
-
         // Get wiki IDs
         Collection<String> wikiIDs = wikiDescriptor.getAllIds();
         
@@ -145,7 +104,6 @@ public class GDPRJob extends AbstractJob<GDPRRequest, DefaultJobStatus<GDPRReque
 
         // Stop progress
         this.progressManager.popLevelProgress(this);
-
     }
 
     private void enableGDPROnWiki(String wikiId, XWikiContext context)
@@ -153,29 +111,32 @@ public class GDPRJob extends AbstractJob<GDPRRequest, DefaultJobStatus<GDPRReque
         // Start step
         this.progressManager.startStep(this);
         
-        logger.info("Enforcing GDPR complience on wiki {}", wikiId);
+        logger.info("Enforcing GDPR complience on wiki [{}]", wikiId);
         
         // Set wiki
         context.setWikiId(wikiId);
+        WikiReference wikiReference = new WikiReference(wikiId);
 
         try {
             // Search for local user profiles in batches of 1000 users
             int limit = 1000;
             int offset = 0;
-            Query countQuery = this.queryManager.createQuery("from doc.object(XWiki.XWikiUsers) as user", Query.XWQL);
+            Query countQuery = this.queryManager.createQuery(XWQL_USER_QUERY, Query.XWQL);
             long size = (long) countQuery.addFilter(countFilter).setWiki(wikiId).execute().get(0);
             
-            while(offset < size) {
-              Query query = this.queryManager.createQuery("from doc.object(XWiki.XWikiUsers) as user", Query.XWQL);
-              List<String> userList = query.setWiki(wikiId).setOffset(offset).setLimit(limit).execute();
+            while (offset < size) {
+                Query query = this.queryManager.createQuery(XWQL_USER_QUERY, Query.XWQL);
+                List<String> userList = query.setWiki(wikiId).setOffset(offset).setLimit(limit).execute();
 
-              // Secure the user profiles
-              for (String user : userList) {
-                  //logger.debug("Updating the profile page of {}:{}", wikiId, user);
-                  secureUserProfile(user, context);
-              }
-              
-              offset+= limit;
+                // Secure the user profiles
+                for (String user : userList) {
+                    DocumentReference userReference =
+                        documentReferenceResolver.resolve(user).setWikiReference(wikiReference);
+                    logger.debug("Updating the profile page of [{}]", userReference);
+                    gdprHelper.secureUserProfile(userReference, context);
+                }
+
+                offset += limit;
             }
         } catch (Exception e) {
             logger.error("Could enable GDPR on wiki {}", wikiId, e);
@@ -184,68 +145,4 @@ public class GDPRJob extends AbstractJob<GDPRRequest, DefaultJobStatus<GDPRReque
         // End step
         this.progressManager.endStep(this);
     }
-
-    private void secureUserProfile(String user, XWikiContext context) throws XWikiException
-    {
-        try {
-            DocumentReference userDocRef = this.defaultDocRefResolver.resolve(user, context.getWikiReference());
-            XWikiDocument userXDoc = context.getWiki().getDocument(userDocRef, context);
-
-            // Hide the document
-            userXDoc.setHidden(true);
-
-            // Delete existing rights objects
-            userXDoc.removeXObjects(RIGHTS_CLASS);
-
-            // Add rights for the owner
-            addRightsObject(userDocRef, true, userXDoc, context);
-
-            // Add rights for the (local) admin group
-            addRightsObject(ADMIN_GROUP_REFERENCE, false, userXDoc, context);
-
-            // Save the document
-            String defaultMessage = "Enforced rights for GDPR compliance.";
-            String message = getMessage("gdpr.save.setRights", defaultMessage,
-                Arrays.asList(localSerializer.serialize(userDocRef).toString()));
-            context.getWiki().saveDocument(userXDoc, message, false, context);
-        } catch (Exception e) {
-            logger.warn("Could not enable GDPR for user {}", user, e);
-        }
-    }
-    
-    private void addRightsObject(EntityReference docRef, boolean isUser, XWikiDocument userXDoc, XWikiContext context)
-        throws XWikiException
-    {
-        // Create a new rights object
-        BaseObject rightsObject = userXDoc.newXObject(RIGHTS_CLASS, context);
-        
-        // Set user / group
-        String rightsPropertyName = RIGHTS_USERS;
-        if (!isUser) {
-            rightsPropertyName = RIGHTS_GROUPS;
-        }
-        rightsObject.set(rightsPropertyName, localSerializer.serialize(docRef).toString(), context);
-
-        // Set the allow flag
-        rightsObject.set(RIGHTS_ALLOWDENY, 1, context);
-
-        // Set view and edit rights to the current user
-        rightsObject.set(RIGHTS_LEVELS, "view,edit", context);
-    }
-
-    protected String getMessage(String key, String defaultMessage, List<String> params)
-    {
-        String message = (params == null) ? localizationManager.getTranslationPlain(key)
-            : localizationManager.getTranslationPlain(key, params.toArray());
-        if (message == null || message.equals(key)) {
-            message = defaultMessage;
-        }
-        // Trim the message, whichever that is, to 255 characters
-        if (message.length() > 255) {
-            // Add some dots to show that it was trimmed
-            message = message.substring(0, 252) + "...";
-        }
-        return message;
-    }
-
 }

@@ -25,30 +25,48 @@ import org.xwiki.model.reference.DocumentReference;
 import org.xwiki.model.reference.WikiReference;
 
 /**
+ * Request for creating a {@link GDPRJob}.
  *
  * @version $Id$
+ * @since 1.0
  */
 public class GDPRRequest extends AbstractRequest
 {   
     private static final String PROPERTY_WIKI_REFERENCE = "wiki.reference";
     
     private static final String PROPERTY_USER_REFERENCE = "user.reference";
-    
+
+    /**
+     * @return the reference to the wiki in which the job has been triggered
+     */
     public WikiReference getWikiReference()
     {
         return getProperty(PROPERTY_WIKI_REFERENCE);
     }
 
+    /**
+     * Sets the wiki reference of the wiki on which the job has been triggered.
+     *
+     * @param wikiReference the wiki reference.
+     */
     public void setWikiReference(WikiReference wikiReference)
     {
         setProperty(PROPERTY_WIKI_REFERENCE, wikiReference);
     }
 
+    /**
+     * @return the reference of the user that triggered the job
+     */
     public DocumentReference getUserReference()
     {
         return getProperty(PROPERTY_USER_REFERENCE);
     }
 
+    /**
+     * Sets the user who triggered the job.
+     *
+     * @param userReference the user reference
+     */
     public void setUserReference(DocumentReference userReference)
     {
         setProperty(PROPERTY_USER_REFERENCE, userReference);
