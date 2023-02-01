@@ -44,15 +44,24 @@ import org.xwiki.security.authorization.Right;
 import com.xpn.xwiki.XWikiContext;
 
 /**
+ * Script service for the GDPR Application.
+ *
  * @version $Id$
+ * @since 1.0
  */
 @Component
 @Named(GDPRScriptService.ROLE_HINT)
 @Singleton
 public class GDPRScriptService implements ScriptService
 {
+    /**
+     * The name of the script service.
+     */
     public static final String ROLE_HINT = "gdpr";
 
+    /**
+     * The ID of the GDPR Job.
+     */
     private static final List<String> JOB_ID = Arrays.asList(GDPRScriptService.ROLE_HINT, "singleton");
 
     @Inject
@@ -71,11 +80,14 @@ public class GDPRScriptService implements ScriptService
     private ContextualAuthorizationManager authorization;
 
     @Inject
-    protected Provider<XWikiContext> xwikiContextProvider;
+    private Provider<XWikiContext> xwikiContextProvider;
 
     @Inject
-    protected EntityReferenceSerializer<String> serializer;
+    private EntityReferenceSerializer<String> serializer;
 
+    /**
+     * Apply the defined GDPR security rules on user profiles.
+     */
     public void protectUserProfiles()
     {
         JobStatus jobStatus = getJobStatus();
@@ -86,7 +98,7 @@ public class GDPRScriptService implements ScriptService
         }
         if (!authorization.hasAccess(Right.ADMIN, new WikiReference(xwikiContextProvider.get().getMainXWiki()))) {
             // Only a global admin should be able to enable GDPR on the current wiki
-            logger.warn("The user {} does not have the right to enforce GDPR complience.",
+            logger.warn("The user [{}] does not have the right to enforce GDPR compliance.",
                 serializer.serialize(xwikiContextProvider.get().getUserReference()));
             return;
         }
@@ -99,6 +111,9 @@ public class GDPRScriptService implements ScriptService
         }
     }
 
+    /**
+     * @return the status of the GDPR job
+     */
     public JobStatus getJobStatus()
     {
         return this.jobStatusStore.getJobStatus(JOB_ID);
