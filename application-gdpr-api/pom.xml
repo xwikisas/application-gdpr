@@ -23,13 +23,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.xwiki.contrib.gdpr</groupId>
+    <groupId>com.xwiki.gdpr</groupId>
     <artifactId>application-gdpr</artifactId>
     <version>1.3-SNAPSHOT</version>
   </parent>
   <artifactId>application-gdpr-api</artifactId>
-  <packaging>jar</packaging>
-  <name>GDPR - API</name>
+  <name>GDPR Application - API</name>
   <description>API to enforce GDPR on user profile pages</description>
   <properties>
     <xwiki.extension.name>GDPR API</xwiki.extension.name>
@@ -38,7 +37,7 @@
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-oldcore</artifactId>
-      <version>${xwiki.version}</version>
+      <version>${platform.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>
