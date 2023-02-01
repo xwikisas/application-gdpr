@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.1" encoding="UTF-8"?>
 
 <!--
  * See the NOTICE file distributed with this work for additional
@@ -27,12 +27,9 @@
   <defaultLanguage/>
   <translation>0</translation>
   <creator>xwiki:XWiki.Admin</creator>
-  <creationDate>1551878368000</creationDate>
   <parent>xwiki:GDPR.Code.WebHome</parent>
   <author>xwiki:XWiki.Admin</author>
   <contentAuthor>xwiki:XWiki.Admin</contentAuthor>
-  <date>1551943609000</date>
-  <contentUpdateDate>1551943609000</contentUpdateDate>
   <version>1.1</version>
   <title>GDPR Administration</title>
   <comment/>
@@ -48,13 +45,13 @@
   #set($finished = $jobStatus.state == 'FINISHED')
   #if ($finished)
     #if ($jobStatus.log.getLogs('ERROR').isEmpty())
-       &lt;div class="box successmessage">
+       &lt;div class="box successmessage"&gt;
          $services.localization.render('gdpr.admin.protect.log.message.success')
-       &lt;/div>
+       &lt;/div&gt;
     #else
-       &lt;div class="box errormessage">
+       &lt;div class="box errormessage"&gt;
          $services.localization.render('gdpr.admin.protect.log.message.errors')
-       &lt;/div>
+       &lt;/div&gt;
     #end
   #end
 #end
@@ -68,27 +65,27 @@
     #end
 
     {{html clean="false"}}
-    &lt;div id="admin-protectUserProfiles">
-      &lt;form class="xform half" action="$xwiki.relativeRequestURL" method="post">
-        &lt;div class="hidden">
-          &lt;input type="hidden" name="form_token" value="$services.csrf.token" />
-          &lt;input type="hidden" name="action" value="protectUserProfiles" />
-        &lt;/div>
-        &lt;fieldset>
-          &lt;legend>$services.localization.render('gdpr.admin.protect.userprofiles.legend')&lt;/fieldset>
-          &lt;dl>
-            &lt;label for="secureUserProfile">$services.localization.render('gdpr.admin.protect.userprofiles.label')&lt;/label>
-            &lt;dt>
-              &lt;span class="xHint">$services.localization.render('gdpr.admin.protect.userprofiles.hint')&lt;/span>
-            &lt;/dt>
-            &lt;dd>
-              &lt;div class="buttonwrapper">
-                &lt;input type="submit" class="button" value="$services.localization.render('gdpr.admin.submit')" />
-              &lt;/div>
-            &lt;/dd>     
-        &lt;/fieldset>
-      &lt;/form>
-      &lt;/div>   
+    &lt;div id="admin-protectUserProfiles"&gt;
+      &lt;form class="xform half" action="$xwiki.relativeRequestURL" method="post"&gt;
+        &lt;div class="hidden"&gt;
+          &lt;input type="hidden" name="form_token" value="$services.csrf.token" /&gt;
+          &lt;input type="hidden" name="action" value="protectUserProfiles" /&gt;
+        &lt;/div&gt;
+        &lt;fieldset&gt;
+          &lt;legend&gt;$services.localization.render('gdpr.admin.protect.userprofiles.legend')&lt;/fieldset&gt;
+          &lt;dl&gt;
+            &lt;label for="secureUserProfile"&gt;$services.localization.render('gdpr.admin.protect.userprofiles.label')&lt;/label&gt;
+            &lt;dt&gt;
+              &lt;span class="xHint"&gt;$services.localization.render('gdpr.admin.protect.userprofiles.hint')&lt;/span&gt;
+            &lt;/dt&gt;
+            &lt;dd&gt;
+              &lt;div class="buttonwrapper"&gt;
+                &lt;input type="submit" class="button" value="$services.localization.render('gdpr.admin.submit')" /&gt;
+              &lt;/div&gt;
+            &lt;/dd&gt;     
+        &lt;/fieldset&gt;
+      &lt;/form&gt;
+      &lt;/div&gt;   
     {{/html}}
   #end
 #end
@@ -122,27 +119,27 @@
     #set($finished = $jobStatus.state == 'FINISHED')
 
     {{html clean="false"}}
-      &lt;div class="xcontent job-status" data-url="$jobStatusURL">
+      &lt;div class="xcontent job-status" data-url="$jobStatusURL"&gt;
         #displayJobProgressBar($jobStatus)
         #if (!$finished)          
           #if ($jobStatus &amp;&amp; $jobStatus.log.isEmpty() &amp;&amp; $jobStatus.state == 'NONE')
-            &lt;p class="ui-progress-message">
+            &lt;p class="ui-progress-message"&gt;
               $services.localization.render('gdpr.admin.protect.log.message.waiting')
-            &lt;/p>
+            &lt;/p&gt;
           #end
         #else
           #if ($jobStatus.log.getLogs('ERROR').isEmpty())
-            &lt;div class="box successmessage">
+            &lt;div class="box successmessage"&gt;
               $services.localization.render('gdpr.admin.protect.log.message.success')
-            &lt;/div>
+            &lt;/div&gt;
           #else
-            &lt;div class="box errormessage">
+            &lt;div class="box errormessage"&gt;
               $services.localization.render('gdpr.admin.protect.log.message.errors')
-            &lt;/div>
+            &lt;/div&gt;
           #end
         #end
         #displayJobStatusLog($jobStatus true)
-      &lt;/div>
+      &lt;/div&gt;
     {{/html}}
   #end
 #end
@@ -351,34 +348,34 @@
       </sectionOrder>
     </class>
     <property>
-      <categoryIcon></categoryIcon>
+      <categoryIcon/>
     </property>
     <property>
       <codeToExecute>{{include reference="GDPR.Code.GDPRAdmin" /}}</codeToExecute>
     </property>
     <property>
-      <configurationClass></configurationClass>
+      <configurationClass/>
     </property>
     <property>
       <configureGlobally>1</configureGlobally>
     </property>
     <property>
-      <displayBeforeCategory></displayBeforeCategory>
+      <displayBeforeCategory/>
     </property>
     <property>
-      <displayInCategory></displayInCategory>
+      <displayInCategory/>
     </property>
     <property>
       <displayInSection>GDPR</displayInSection>
     </property>
     <property>
-      <heading></heading>
+      <heading/>
     </property>
     <property>
-      <iconAttachment></iconAttachment>
+      <iconAttachment/>
     </property>
     <property>
-      <linkPrefix></linkPrefix>
+      <linkPrefix/>
     </property>
     <property>
       <propertiesToShow/>
@@ -481,7 +478,7 @@ require(['jquery', 'JobRunner'], function($, JobRunner) {
     var percent = Math.floor((job.progress.offset || 0) * 100);
     jobUI.find('.ui-progress-bar').css('width', percent + '%');
     var jobLog = job.log.items || [];
-    if (jobLog.size() > 0) {
+    if (jobLog.size() &gt; 0) {
       jobUI.find('.ui-progress-message').html(jobLog[jobLog.size() - 1].renderedMessage);
     }
   };
@@ -539,7 +536,7 @@ require(['jquery', 'JobRunner'], function($, JobRunner) {
 });</code>
     </property>
     <property>
-      <name></name>
+      <name/>
     </property>
     <property>
       <parse>1</parse>
