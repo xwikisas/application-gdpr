@@ -37,7 +37,7 @@
   </properties>
   <dependencies>
     <dependency>
-      <groupId>org.xwiki.contrib.gdpr</groupId>
+      <groupId>com.xwiki.gdpr</groupId>
       <artifactId>application-gdpr-api</artifactId>
       <version>${project.version}</version>
       <scope>runtime</scope>

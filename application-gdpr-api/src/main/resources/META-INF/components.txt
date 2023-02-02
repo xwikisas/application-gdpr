@@ -1,6 +1,5 @@
 com.xwiki.gdpr.internal.DefaultGDPRConfiguration
 com.xwiki.gdpr.internal.DefaultGDPRHelper
 com.xwiki.gdpr.internal.RightsEnforcerListener
-com.xwiki.gdpr.script.GDPRScriptService
 com.xwiki.gdpr.internal.GDPRJob
-
+com.xwiki.gdpr.script.GDPRScriptService

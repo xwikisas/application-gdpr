@@ -150,8 +150,12 @@ public class DefaultGDPRHelper implements GDPRHelper
         // Set the allow flag
         rightsObject.set(RIGHTS_ALLOWDENY, 1, context);
 
-        // Set view and edit rights to the current user
-        rightsObject.set(RIGHTS_LEVELS, "view,edit", context);
+        if (isUser) {
+            // Set view and edit rights to the current user
+            rightsObject.set(RIGHTS_LEVELS, "view,edit", context);
+        } else {
+            rightsObject.set(RIGHTS_LEVELS, "view", context);
+        }
     }
 
     private void removeRightObjects(XWikiDocument userXDoc)
