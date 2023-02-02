@@ -35,6 +35,23 @@
     <!-- Name to display by the Extension Manager -->
     <xwiki.extension.name>GDPR Application</xwiki.extension.name>
   </properties>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.xwiki.commons</groupId>
+        <artifactId>xwiki-commons-tool-xar-plugin</artifactId>
+        <configuration>
+          <entries>
+            <entry>
+              <document>GDPR.Code.GDPRConfiguration</document>
+              <type>configuration</type>
+            </entry>
+          </entries>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <groupId>com.xwiki.gdpr</groupId>
